@@ -38,6 +38,7 @@ public class MimeMappings {
         Map<String, String> defaultMappings = new HashMap<>(101);
         defaultMappings.put("txt", "text/plain");
         defaultMappings.put("css", "text/css");
+        defaultMappings.put("csv", "text/csv");
         defaultMappings.put("html", "text/html");
         defaultMappings.put("htm", "text/html");
         defaultMappings.put("gif", "image/gif");
@@ -45,6 +46,7 @@ public class MimeMappings {
         defaultMappings.put("jpe", "image/jpeg");
         defaultMappings.put("jpeg", "image/jpeg");
         defaultMappings.put("bmp", "image/bmp");
+        defaultMappings.put("webp", "image/webp");
         defaultMappings.put("js", "application/javascript");
         defaultMappings.put("png", "image/png");
         defaultMappings.put("java", "text/plain");
@@ -118,6 +120,12 @@ public class MimeMappings {
         defaultMappings.put("mpeg", "video/mpeg");
         defaultMappings.put("mpg", "video/mpeg");
         defaultMappings.put("mpe", "video/mpeg");
+        
+        defaultMappings.put("mp4", "video/mp4");
+        defaultMappings.put("webm", "video/webm");
+        defaultMappings.put("flac", "audio/flac");
+        defaultMappings.put("weba", "audio/webm");
+        
         defaultMappings.put("qt", "video/quicktime");
         defaultMappings.put("mov", "video/quicktime");
         defaultMappings.put("avi", "video/x-msvideo");
