@@ -41,7 +41,6 @@ import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.servlet.util.EmptyEnumeration;
 import io.undertow.servlet.util.IteratorEnumeration;
 import io.undertow.util.AttachmentKey;
-import io.undertow.util.CanonicalPathUtils;
 import io.undertow.util.DateUtils;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
@@ -233,7 +232,9 @@ public final class HttpServletRequestImpl implements HttpServletRequest {
     public HttpServletMapping getHttpServletMapping() {
         ServletRequestContext src = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         ServletPathMatch match = src.getOriginalServletPathMatch();
-        if(getDispatcherType() == DispatcherType.FORWARD) {
+        final DispatcherType dispatcherType = getDispatcherType();
+        //UNDERTOW-1899 - ERROR is essentially forward operation
+        if(dispatcherType == DispatcherType.FORWARD || dispatcherType == DispatcherType.ERROR) {
             match = src.getServletPathMatch();
         }
         String matchValue;
@@ -250,15 +251,18 @@ public final class HttpServletRequestImpl implements HttpServletRequest {
                 break;
             case PATH:
                 matchValue = match.getRemaining();
-                if(matchValue.startsWith("/")) {
+                if (matchValue == null) {
+                    matchValue = "";
+                } else if (matchValue.startsWith("/")) {
                     matchValue = matchValue.substring(1);
                 }
                 break;
             case EXTENSION:
-                matchValue = match.getMatched().substring(0, match.getMatched().length() - match.getMatchString().length() + 1);
-                if(matchValue.startsWith("/")) {
-                    matchValue = matchValue.substring(1);
-                }
+                String matched = match.getMatched();
+                String matchString = match.getMatchString();
+                int startIndex = matched.startsWith("/") ? 1 : 0;
+                int endIndex = matched.length() - matchString.length() + 1;
+                matchValue = matched.substring(startIndex, endIndex);
                 break;
             default:
                 matchValue = match.getRemaining();
@@ -982,6 +986,9 @@ public final class HttpServletRequestImpl implements HttpServletRequest {
 
     @Override
     public RequestDispatcher getRequestDispatcher(final String path) {
+        if (path == null) {
+            return null;
+        }
         String realPath;
         if (path.startsWith("/")) {
             realPath = path;
@@ -991,9 +998,9 @@ public final class HttpServletRequestImpl implements HttpServletRequest {
             if (lastSlash != -1) {
                 current = current.substring(0, lastSlash + 1);
             }
-            realPath = CanonicalPathUtils.canonicalize(current + path);
+            realPath = current + path;
         }
-        return new RequestDispatcherImpl(realPath, servletContext);
+        return servletContext.getRequestDispatcher(realPath);
     }
 
     @Override
